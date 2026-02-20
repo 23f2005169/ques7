@@ -1,13 +1,36 @@
-name: Email Step Action
+name: Caching Exercise
 
-on: 
+on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: 23f2005169@ds.study.iitm.ac.in
-        run: echo "The action is running successfully for this user."
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # This step sets up the cache
+      - name: Cache dependencies
+        id: cache-step
+        uses: actions/cache@v4
+        with:
+          path: ~/dummy-cache-dir
+          key: cache-a0a543a
+
+      # This is the specific step name required by your task
+      - name: prime-cache-a0a543a
+        run: |
+          echo "Cache hit: ${{ steps.cache-step.outputs.cache-hit }}"
+          
+          # Create a dummy file if the cache missed, so there's something to save
+          if [ "${{ steps.cache-step.outputs.cache-hit }}" != 'true' ]; then
+            mkdir -p ~/dummy-cache-dir
+            echo "Data to cache" > ~/dummy-cache-dir/data.txt
+            echo "Cache missed - creating dummy data to prime it."
+          else
+            echo "Cache hit - data retrieved successfully."
+          fi
